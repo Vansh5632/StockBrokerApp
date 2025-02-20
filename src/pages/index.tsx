@@ -1,10 +1,12 @@
-"use client"
-import React from 'react'
+import LoginButton from "@/components/auth/LoginButton";
 
-const index = () => {
+
+export default function Home() {
   return (
-    <div className='bg-primary min-h-screen'>Check</div>
-  )
+    <div>
+      <div className="flex min-h-screen items-center justify-center bg-primary text-white">
+        <LoginButton />
+      </div>
+    </div>
+  );
 }
-
-export default index

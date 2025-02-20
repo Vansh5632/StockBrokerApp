@@ -1,12 +1,14 @@
 import "@/styles/globals.css";
 import { SessionProvider } from "next-auth/react";
 import { AppProps } from "next/app";
+import { RecoilRoot } from "recoil";
 
 export default function App({ Component, pageProps }: AppProps) {
-
-    return (
+  return (
     <SessionProvider session={pageProps.session}>
-
-    <Component {...pageProps} />;
-    </SessionProvider>)
+      <RecoilRoot>
+        <Component {...pageProps} />;
+      </RecoilRoot>
+    </SessionProvider>
+  );
 }
