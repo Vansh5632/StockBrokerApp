@@ -1,14 +1,9 @@
-import {atom} from "recoil";
+import { atom } from 'recoil';
 
-interface Portfolio {
-    funds: number;
-    stocks: [];
-}
-
-export const portfolioState = atom<Portfolio>({
-    key: "portfolioState",
-    default: {
-        funds: 10000,
-        stocks: []
-    },
+export const portfolioState = atom({
+  key: 'portfolioState',
+  default: {
+    funds: 0,
+    stocks: [],
+  }
 });
