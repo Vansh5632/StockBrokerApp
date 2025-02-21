@@ -1,3 +1,13 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+body {
+  @apply bg-primary text-white min-h-screen overflow-x-hidden;
+}
+
+.glow-bg {
+  @apply absolute inset-0 -z-10;
+  background: radial-gradient(circle at 50% 50%, rgba(37, 99, 235, 0.1), transparent 70%);
+  filter: blur(40px);
+}
