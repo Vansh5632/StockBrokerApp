@@ -1,6 +1,16 @@
-// components/Hero.jsx
-export default function HeroSection() {
-    return (
+'use client';
+
+import { JSX, useState } from 'react';
+import Modal from '../Modal';
+import AuthForms from '../../auth/AuthForm';
+
+type ModalType = 'signup' | 'login' | null;
+
+export default function HeroSection(): JSX.Element {
+  const [modalType, setModalType] = useState<ModalType>(null);
+
+  return (
+    <>
       <section className="relative pt-32 pb-20 px-4 overflow-hidden">
         <div className="glow-bg" />
         <div className="max-w-5xl mx-auto text-center">
@@ -11,10 +21,20 @@ export default function HeroSection() {
             Your ultimate stock trading companion. Real-time insights, 
             powerful tools, and seamless execution.
           </p>
-          <button className="px-8 py-3 text-lg rounded-md font-semibold bg-secondary text-white hover:scale-105 transition-all duration-300 shadow-[0_0_20px_rgba(37,99,235,0.5)] animate-glow">
+          <button 
+            onClick={() => setModalType('signup')}
+            className="px-8 py-3 text-lg rounded-md font-semibold bg-secondary text-white hover:scale-105 transition-all duration-300 shadow-[0_0_20px_rgba(37,99,235,0.5)] animate-glow"
+          >
             Get Started
           </button>
         </div>
       </section>
-    );
-  }
+      <Modal isOpen={!!modalType} onClose={() => setModalType(null)}>
+        <AuthForms 
+          type={modalType} 
+          onClose={(newType: ModalType) => setModalType(newType || null)} 
+        />
+      </Modal>
+    </>
+  );
+}
