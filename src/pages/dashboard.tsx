@@ -2,6 +2,7 @@
 import MarketOverview from "@/components/Dashboard/MarketOverview";
 import PortfolioSummary from "@/components/Dashboard/PortfolioSummary";
 import QuickTrade from "@/components/Dashboard/QuickTrade";
+import Watchlist from "@/components/Dashboard/Watchlist";
 import { RecoilRoot } from "recoil";
 
 export default function Dashboard() {
@@ -19,6 +20,7 @@ export default function Dashboard() {
           <div className="bg-white shadow-md rounded-md p-4">
             <QuickTrade />
           </div>
+          <Watchlist/>
         </div>
       </div>
     </RecoilRoot>
