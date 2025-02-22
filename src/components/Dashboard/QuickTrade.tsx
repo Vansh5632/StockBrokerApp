@@ -16,18 +16,25 @@ export default function QuickTrade() {
   };
 
   return (
-    <div className="bg-white p-4 rounded-xl shadow-lg mt-6">
-      <h2 className="text-lg font-semibold mb-2">Quick Trade</h2>
-      <input
-        type="number"
-        placeholder="Amount"
-        className="border p-2 w-full mb-2"
-        value={amount}
-        onChange={(e) => setAmount(e.target.value)}
-      />
-      <button className="bg-blue-500 text-white px-4 py-2 rounded-lg" onClick={handleBuy}>
-        Buy
-      </button>
+    <div className="bg-white p-6 rounded-xl shadow-md mt-6">
+      <h2 className="text-xl font-semibold mb-4 text-gray-800">Quick Trade</h2>
+      <div className="mb-4">
+        <input
+          type="number"
+          placeholder="Enter Amount"
+          className="border rounded-md py-2 px-3 w-full text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+        />
+      </div>
+      <div className="flex justify-between">
+        <button className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" onClick={handleBuy}>
+          Buy
+        </button>
+        <button className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+          Sell
+        </button>
+      </div>
     </div>
   );
 }

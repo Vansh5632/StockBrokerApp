@@ -7,7 +7,7 @@ export default function App({ Component, pageProps }: AppProps) {
   return (
     <SessionProvider session={pageProps.session}>
       <RecoilRoot>
-        <Component {...pageProps} />;
+        <Component {...pageProps} />
       </RecoilRoot>
     </SessionProvider>
   );
