@@ -11,7 +11,7 @@ export default function LiveStockPrice({ symbol }) {
         const response = await fetch(`/api/marketData?symbol=${symbol}`);
         const data = await response.json();
 
-        if (data.error) throw new Error(data.error);
+        if (data.error) console.log("Error fetching stock data:", data.error);
 
         setStockData(data);
       } catch (error) {
