@@ -5,5 +5,6 @@ export const portfolioState = atom({
   default: {
     funds: 0,
     stocks: [],
+    history:[],
   }
 });
