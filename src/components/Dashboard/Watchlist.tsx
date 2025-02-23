@@ -15,7 +15,7 @@ export default function Watchlist() {
     <div className="p-6 bg-white rounded-xl shadow-lg">
       <h2 className="text-2xl font-bold mb-6 text-center text-black">📈 Watchlist</h2>
       <StockSearch />
-      <div className="mt-4">
+      <div className={`mt-4 ${watchlist.length > 2 ? 'max-h-96 overflow-y-auto scrollbar-hide' : ''}`}>
         {watchlist.length > 0 ? (
           <ul className="space-y-4">
             {watchlist.map((stock) => (
