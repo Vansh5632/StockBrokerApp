@@ -25,7 +25,7 @@ export default function StockItem({
                 <h3 className="text-lg font-semibold text-gray-800">{name}</h3>
                 <p className="text-sm text-gray-500">{symbol}</p>
             </div>
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-6">
                 <div className="text-right">
                     <p className="text-base font-medium text-gray-700">
                         ${price.toFixed(2)}
@@ -36,7 +36,7 @@ export default function StockItem({
                 </div>
                 <button
                     onClick={() => onRemove(symbol)}
-                    className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition-colors duration-300"
+                    className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full focus:outline-none focus:shadow-outline transition-colors duration-300"
                 >
                     Remove
                 </button>

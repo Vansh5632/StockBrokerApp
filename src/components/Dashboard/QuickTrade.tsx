@@ -5,19 +5,43 @@ import { useState } from "react";
 export default function QuickTrade() {
   const [portfolio, setPortfolio] = useRecoilState(portfolioState);
   const [amount, setAmount] = useState("");
+  const [error, setError] = useState("");
 
   const handleBuy = () => {
-    if (parseInt(amount) > 0) {
-      setPortfolio((prev) => ({
-        ...prev,
-        funds: prev.funds - parseInt(amount),
-      }));
+    const parsedAmount = parseInt(amount);
+    if (isNaN(parsedAmount) || parsedAmount <= 0) {
+      setError("Please enter a valid amount.");
+      return;
     }
+    if (parsedAmount > portfolio.funds) {
+      setError("Insufficient funds.");
+      return;
+    }
+    setPortfolio((prev) => ({
+      ...prev,
+      funds: prev.funds - parsedAmount,
+    }));
+    setAmount("");
+    setError("");
+  };
+
+  const handleSell = () => {
+    const parsedAmount = parseInt(amount);
+    if (isNaN(parsedAmount) || parsedAmount <= 0) {
+      setError("Please enter a valid amount.");
+      return;
+    }
+    setPortfolio((prev) => ({
+      ...prev,
+      funds: prev.funds + parsedAmount,
+    }));
+    setAmount("");
+    setError("");
   };
 
   return (
-    <div className="bg-white p-6 rounded-xl shadow-md mt-6">
-      <h2 className="text-xl font-semibold mb-4 text-gray-800">Quick Trade</h2>
+    <div className="bg-white p-6 rounded-xl shadow-md mt-6 max-w-md mx-auto">
+      <h2 className="text-2xl font-semibold mb-4 text-gray-800 text-center">Quick Trade</h2>
       <div className="mb-4">
         <input
           type="number"
@@ -26,12 +50,19 @@ export default function QuickTrade() {
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
         />
+        {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
       </div>
-      <div className="flex justify-between">
-        <button className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" onClick={handleBuy}>
+      <div className="flex justify-between space-x-4">
+        <button
+          className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full"
+          onClick={handleBuy}
+        >
           Buy
         </button>
-        <button className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+        <button
+          className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full"
+          onClick={handleSell}
+        >
           Sell
         </button>
       </div>

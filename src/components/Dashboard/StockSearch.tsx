@@ -1,19 +1,33 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRecoilState } from "recoil";
 import { watchlistState, availableStocks } from "../../store/watchlistAtom";
+import debounce from "lodash/debounce";
 
 export default function StockSearch() {
     const [query, setQuery] = useState("");
     const [watchlist, setWatchlist] = useRecoilState(watchlistState);
+    const [filteredStocks, setFilteredStocks] = useState<{ name: string; symbol: string }[]>([]);
 
-    const filteredStocks = availableStocks.filter(
-        (stock) =>
-            stock.name.toLowerCase().includes(query.toLowerCase()) ||
-            stock.symbol.toLowerCase().includes(query.toLowerCase())
-    );
+    useEffect(() => {
+        const debouncedFilter = debounce(() => {
+            setFilteredStocks(
+                availableStocks.filter(
+                    (stock) =>
+                        stock.name.toLowerCase().includes(query.toLowerCase()) ||
+                        stock.symbol.toLowerCase().includes(query.toLowerCase())
+                )
+            );
+        }, 300);
 
-    const addStock = (stock: any) => {
-        if (!watchlist.some((s) => s.symbol === stock.symbol)) {
+        debouncedFilter();
+
+        return () => {
+            debouncedFilter.cancel();
+        };
+    }, [query]);
+
+    const addStock = (stock: { name: string; symbol: string }) => {
+        if (!watchlist.some((s: { symbol: string }) => s.symbol === stock.symbol)) {
             setWatchlist([...watchlist, stock]);
         }
         setQuery(""); // Clear search bar
@@ -26,19 +40,19 @@ export default function StockSearch() {
                 placeholder="Search stocks..."
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                className="text-black w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="text-black w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300"
             />
             {query && (
-                <ul className="bg-black border mt-2 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                <ul className="bg-white text-black border mt-2 rounded-md shadow-lg max-h-60 overflow-y-auto transition duration-300">
                     {filteredStocks.map((stock) => (
                         <li
                             key={stock.symbol}
-                            className="p-2 cursor-pointer hover:bg-gray-100 flex justify-between items-center"
+                            className="p-2 cursor-pointer hover:bg-gray-100 flex justify-between items-center transition duration-300"
                             onClick={() => addStock(stock)}
                         >
                             <span>{stock.name} ({stock.symbol})</span>
                             <button
-                                className="text-blue-500 hover:text-blue-700"
+                                className="text-blue-500 hover:text-blue-700 transition duration-300"
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     addStock(stock);
