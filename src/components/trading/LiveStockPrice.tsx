@@ -11,12 +11,68 @@ interface LiveStockPriceProps {
   symbol: string;
 }
 
-const mockStockData: StockData = {
-  symbol: "AAPL",
-  price: 150.25,
-  change: 2.34,
-  percentChange: "1.58%",
-};
+const mockStockData: StockData[] = [
+  {
+    symbol: "AAPL",
+    price: 150.25,
+    change: 2.34,
+    percentChange: "1.58%",
+  },
+  {
+    symbol: "TSLA",
+    price: 800.00,
+    change: -5.00,
+    percentChange: "-0.62%",
+  },
+  {
+    symbol: "AMZN",
+    price: 3500.00,
+    change: 10.00,
+    percentChange: "0.29%",
+  },
+  {
+    symbol: "MSFT",
+    price: 300.00,
+    change: -1.50,
+    percentChange: "-0.50%",
+  },
+  {
+    symbol: "GOOGL",
+    price: 2805.50,
+    change: 2.50,
+    percentChange: "0.09%",
+  },
+  {
+    symbol: "FB",
+    price: 355.64,
+    change: 4.50,
+    percentChange: "1.28%",
+  },
+  {
+    symbol: "NFLX",
+    price: 590.65,
+    change: -6.50,
+    percentChange: "-1.09%",
+  },
+  {
+    symbol: "NVDA",
+    price: 220.50,
+    change: 7.00,
+    percentChange: "3.28%",
+  },
+  {
+    symbol: "BABA",
+    price: 160.00,
+    change: -3.00,
+    percentChange: "-1.85%",
+  },
+  {
+    symbol: "INTC",
+    price: 55.00,
+    change: 0.50,
+    percentChange: "0.91%",
+  },
+];
 
 export default function LiveStockPrice({ symbol }: LiveStockPriceProps) {
   const [stockData, setStockData] = useState<StockData | null>(null);
@@ -28,7 +84,10 @@ export default function LiveStockPrice({ symbol }: LiveStockPriceProps) {
       try {
         let data;
         if (process.env.NODE_ENV === "development") {
-          data = mockStockData;
+          data = mockStockData.find(stock => stock.symbol === symbol);
+          if (!data) {
+            throw new Error("Stock data not found");
+          }
         } else {
           const response = await fetch(`/api/marketData?symbol=${symbol}`);
           data = await response.json();
