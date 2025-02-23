@@ -1,10 +1,42 @@
-const stocks = [
-  { name: "Reliance", symbol: "RELI", price: 2520.5, change: "+1.5%" },
-  { name: "TCS", symbol: "TCS", price: 3350.8, change: "-0.8%" },
-  { name: "Infosys", symbol: "INFY", price: 1490.2, change: "+0.3%" },
-];
+import { useState, useEffect } from "react";
 
 export default function MarketOverview() {
+  const [stockData, setStockData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    async function fetchStockData() {
+      try {
+        const response = await fetch(`/api/marketData`);
+        const data = await response.json();
+
+        if (data.error) {
+          console.log("Error fetching stock data:", data.error);
+        } else {
+          setStockData(data);
+        }
+      } catch (error) {
+        console.error("Error fetching stock data:", error);
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchStockData();
+    const interval = setInterval(fetchStockData, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
+
   return (
     <div className="bg-white p-6 rounded-xl shadow-md overflow-hidden">
       <h2 className="text-2xl font-bold text-gray-800 mb-4">Market Overview</h2>
@@ -24,7 +56,7 @@ export default function MarketOverview() {
             </tr>
           </thead>
           <tbody className="bg-white">
-            {stocks.map((stock) => (
+            {stockData.map((stock) => (
               <tr key={stock.symbol}>
                 <td className="px-5 py-5 border-b border-gray-200 text-sm">
                   <div className="flex items-center">
