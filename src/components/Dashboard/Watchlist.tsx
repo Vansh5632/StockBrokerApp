@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useRecoilState } from "recoil";
 import { watchlistState } from "../../store/watchlistAtom";
 import StockItem from "./StockItem";
@@ -6,6 +6,20 @@ import StockSearch from "./StockSearch";
 
 export default function Watchlist() {
   const [watchlist, setWatchlist] = useRecoilState(watchlistState);
+
+  // Fake price updates every 2 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setWatchlist((prevWatchlist) =>
+        prevWatchlist.map((stock) => ({
+          ...stock,
+          price: stock.price + (Math.random() * 10 - 5), // Fluctuates ±5
+        }))
+      );
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, [setWatchlist]);
 
   const removeStock = (symbol: string) => {
     setWatchlist(watchlist.filter((stock) => stock.symbol !== symbol));
@@ -15,7 +29,7 @@ export default function Watchlist() {
     <div className="p-6 bg-white rounded-xl shadow-lg">
       <h2 className="text-2xl font-bold mb-6 text-center text-black">📈 Watchlist</h2>
       <StockSearch />
-      <div className={`mt-4 ${watchlist.length > 2 ? 'max-h-96 overflow-y-auto scrollbar-hide' : ''}`}>
+      <div className={`mt-4 ${watchlist.length > 2 ? "max-h-96 overflow-y-auto scrollbar-hide" : ""}`}>
         {watchlist.length > 0 ? (
           <ul className="space-y-4">
             {watchlist.map((stock) => (
