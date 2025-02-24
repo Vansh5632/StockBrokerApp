@@ -49,7 +49,7 @@ export default function StockItem({ symbol, name, price, quantity, onRemove }: S
           min="1"
           value={tradeQuantity}
           onChange={(e) => setTradeQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-          className="w-14 p-1 border rounded-md text-center"
+          className="text-black w-14 p-1 border rounded-md text-center"
         />
         <button
           className="bg-green-500 text-white px-3 py-1 rounded-md hover:bg-green-600"
