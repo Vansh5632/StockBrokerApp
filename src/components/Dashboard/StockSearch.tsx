@@ -6,7 +6,7 @@ import debounce from "lodash/debounce";
 export default function StockSearch() {
   const [query, setQuery] = useState("");
   const [watchlist, setWatchlist] = useRecoilState(watchlistState);
-  const [filteredStocks, setFilteredStocks] = useState<{ name: string; symbol: string }[]>([]);
+  const [filteredStocks, setFilteredStocks] = useState<{ name: string; symbol: string; price: number }[]>([]);
 
   useEffect(() => {
     const debouncedFilter = debounce(() => {
@@ -26,14 +26,9 @@ export default function StockSearch() {
     };
   }, [query]);
 
-  const addStock = (stock: { name: string; symbol: string }) => {
-    if (!watchlist.some((s: { symbol: string }) => s.symbol === stock.symbol)) {
-      // Assign a random fake price to new stocks
-      const newStock = {
-        ...stock,
-        price: Math.floor(Math.random() * 500) + 50, // Price between 50 - 550
-      };
-      setWatchlist([...watchlist, newStock]);
+  const addStock = (stock: { name: string; symbol: string; price: number }) => {
+    if (!watchlist.some((s) => s.symbol === stock.symbol)) {
+      setWatchlist([...watchlist, stock]);
     }
     setQuery(""); // Clear search bar
   };
@@ -55,9 +50,7 @@ export default function StockSearch() {
               className="p-2 cursor-pointer hover:bg-gray-100 flex justify-between items-center transition duration-300"
               onClick={() => addStock(stock)}
             >
-              <span>
-                {stock.name} ({stock.symbol})
-              </span>
+              <span>{stock.name} ({stock.symbol}) - 💲{stock.price}</span>
               <button
                 className="text-blue-500 hover:text-blue-700 transition duration-300"
                 onClick={(e) => {

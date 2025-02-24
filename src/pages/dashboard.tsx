@@ -3,7 +3,6 @@ import QuickTrade from "@/components/Dashboard/QuickTrade";
 import TransactionHistory from "@/components/Dashboard/TransactionHistory";
 import Watchlist from "@/components/Dashboard/Watchlist";
 import LiveStockPrice from "@/components/trading/LiveStockPrice";
-import { RecoilRoot } from "recoil";
 
 export default function Dashboard() {
   return (

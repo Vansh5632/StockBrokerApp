@@ -1,21 +1,21 @@
-import React from "react";
-import * as Recoil from "recoil";
-import { portfolioState } from "../../store/portfolioAtom";
+import React, { useEffect, useState } from "react";
+import { useRecoilValue } from "recoil";
+import { watchlistState } from "../../store/watchlistAtom";
 
 export default function PortfolioSummary() {
-    console.log("PortfolioSummary is rendering...");
-    const portfolio = Recoil.useRecoilValue(portfolioState);
-    return(
-        <div className="bg-[#1E293B] p-6 rounded-2xl shadow-xl text-white">
-            <h2 className="text-2xl font-bold mb-4">Portfolio Summary</h2>
-            <div className="flex items-center justify-between mb-3">
-                <span className="text-lg">Total Funds:</span>
-                <span className="text-xl font-semibold">${portfolio.funds.toLocaleString()}</span>
-            </div>
-            <div className="flex items-center justify-between">
-                <span className="text-sm">As of:</span>
-                <span className="text-sm">{new Date().toLocaleDateString()}</span>
-            </div>
-        </div>
-    )
+  const watchlist = useRecoilValue(watchlistState);
+  const [portfolioValue, setPortfolioValue] = useState(0);
+
+  useEffect(() => {
+    // Calculate the total portfolio value
+    const totalValue = watchlist.reduce((sum, stock) => sum + stock.price * stock.quantity, 0);
+    setPortfolioValue(totalValue);
+  }, [watchlist]);
+
+  return (
+    <div className="p-6 bg-white rounded-xl shadow-lg">
+      <h2 className="text-2xl font-bold mb-6 text-center text-black">📊 Portfolio Summary</h2>
+      <p className="text-xl text-center font-semibold text-green-600">💰 Total Value: ${portfolioValue.toFixed(2)}</p>
+    </div>
+  );
 }
