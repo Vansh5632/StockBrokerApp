@@ -34,7 +34,7 @@ export default function TransactionHistory() {
         {transactions.length > 0 ? (
           <ul className="space-y-4">
             {transactions.map((tx) => (
-              <li key={tx.id} className="p-4 border rounded-md bg-gray-100">
+              <li key={tx.id} className="text-black p-4 border rounded-md bg-gray-100">
                 <p className="font-semibold">{tx.name} ({tx.symbol})</p>
                 <p className="text-gray-600">
                   {tx.type === "buy" ? "🟢 Bought" : "🔴 Sold"} {tx.quantity} shares at ${tx.price.toFixed(2)}
