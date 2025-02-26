@@ -22,4 +22,5 @@ const watchlistState = atom<Stock[]>({
   default: [],
 });
 
-export { watchlistState, availableStocks };
+export { watchlistState, availableStocks };  export type { Stock };
+
