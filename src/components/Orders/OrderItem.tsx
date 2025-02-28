@@ -11,7 +11,7 @@ interface Order {
 }
 
 export default function OrderItem({ order }: { order: Order }) {
-    const profitOrLoss = order.type === "sell" ? (order.price - order.buyPrice) * order.quantity : (order.price - order.buyPrice) * order.quantity;
+    const profitOrLoss = order.type === "sell" ? (order.price - order.buyPrice) * order.quantity : (order.buyPrice - order.price) * order.quantity;
     const profitLossClass = profitOrLoss > 0 ? "text-green-400" : profitOrLoss < 0 ? "text-red-400" : "text-gray-400";
 
     return (
@@ -31,11 +31,11 @@ export default function OrderItem({ order }: { order: Order }) {
             <td className="p-3 text-black font-medium">
                 <span className="font-mono">${order.price.toFixed(2)}</span>
             </td>
-            <td className="p-3 text-gray-200 font-medium">
+            {/* <td className="p-3 text-gray-200 font-medium">
                 <span className={`${profitOrLoss > 0 ? "bg-green-400/10" : profitOrLoss < 0 ? "bg-red-400/10" : ""} rounded-lg px-2 py-1`}>
                     {profitOrLoss !== 0 ? `$${profitOrLoss.toFixed(2)}` : "-"}
                 </span>
-            </td>
+            </td> */}
             <td className="p-3 text-gray-400 text-sm">
                 {new Date(order.createdAt).toLocaleDateString()}
             </td>

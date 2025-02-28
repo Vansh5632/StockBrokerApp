@@ -1,36 +1,30 @@
 import React from "react";
 import OrderItem from "./OrderItem";
-
-interface Order {
-    id: string;
-    stock: string;
-    symbol: string;
-    type: string;
-    quantity: number;
-    price: number;
-    profitLoss: number;
-    date: string;
-}
+import { Order } from "../../types/order.type";
 
 export default function OrderList({ orders }: { orders: Order[] }) {
     return (
-        <div className="bg-gray-100 shadow-md rounded-lg overflow-x-auto">
+        <div className="bg-white shadow-lg rounded-lg overflow-x-auto">
             <table className="min-w-full leading-normal">
                 <thead>
-                    <tr className="bg-gray-300 text-gray-700 uppercase text-sm">
-                        <th className="px-5 py-3 border-b-2 border-gray-200 text-left">Stock</th>
-                        <th className="px-5 py-3 border-b-2 border-gray-200 text-left">Symbol</th>
-                        <th className="px-5 py-3 border-b-2 border-gray-200 text-left">Type</th>
-                        <th className="px-5 py-3 border-b-2 border-gray-200 text-left">Quantity</th>
-                        <th className="px-5 py-3 border-b-2 border-gray-200 text-left">Price</th>
-                        <th className="px-5 py-3 border-b-2 border-gray-200 text-left">Profit/Loss</th>
-                        <th className="px-5 py-3 border-b-2 border-gray-200 text-left">Date</th>
+                    <tr className="bg-blue-500 text-white uppercase text-sm">
+                        <th className="px-5 py-3 border-b-2 border-blue-600 text-left">Stock</th>
+                        <th className="px-5 py-3 border-b-2 border-blue-600 text-left">Symbol</th>
+                        <th className="px-5 py-3 border-b-2 border-blue-600 text-left">Type</th>
+                        <th className="px-5 py-3 border-b-2 border-blue-600 text-left">Quantity</th>
+                        <th className="px-5 py-3 border-b-2 border-blue-600 text-left">Price</th>
+
+                        <th className="px-5 py-3 border-b-2 border-blue-600 text-left">Date</th>
                     </tr>
                 </thead>
                 <tbody className="text-sm">
                     {orders.length > 0 ? (
-                        orders.map((order: Order) => (
-                            <OrderItem key={order.id} order={order} />
+                        orders.map((order: Order, index: number) => (
+                            <OrderItem 
+                                key={order.id} 
+                                order={order} 
+                                className={index % 2 === 0 ? "bg-gray-100" : "bg-white"}
+                            />
                         ))
                     ) : (
                         <tr>
