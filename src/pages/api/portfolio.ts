@@ -1,40 +1,37 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import {prisma} from "@/lib/prisma";
-import { getSession } from "next-auth/react";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "./auth/[...nextauth]"; // Adjust the path as per your folder structure
+import {prisma} from "@/lib/prisma"; // Ensure Prisma client is configured correctly
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const session = await getSession({ req });
+    const session = await getServerSession(req, res, authOptions);
 
-  if (!session) return res.status(401).json({ error: "Not authenticated" });
+    if (!session) {
+        return res.status(401).json({ error: "Unauthorized" });
+    }
 
-  const userEmail = session.user?.email;
+    const userId = session.user?.id;
 
-  if (!userEmail) return res.status(400).json({ error: "User email missing" });
+    if (!userId) {
+        return res.status(400).json({ error: "User ID not found in session" });
+    }
 
-  const user = await prisma.user.findUnique({ where: { email: userEmail } });
+    if (req.method === "POST") {
+        try {
+            const { holdings, tradeHistory, funds } = req.body;
 
-  if (!user) return res.status(404).json({ error: "User not found" });
+            const updatedPortfolio = await prisma.portfolio.upsert({
+                where: { userId },
+                update: { holdings, tradeHistory, funds },
+                create: { userId, holdings, tradeHistory, funds },
+            });
 
-  if (req.method === "GET") {
-    // Fetch portfolio summary
-    const portfolio = await prisma.portfolioSummary.findUnique({
-      where: { userId: user.id },
-    });
-    return res.json(portfolio || { stocks: [] });
-  }
+            return res.status(200).json(updatedPortfolio);
+        } catch (error) {
+            console.error("Portfolio update error:", error);
+            return res.status(500).json({ error: "Internal server error" });
+        }
+    }
 
-  if (req.method === "POST") {
-    const { stocks } = req.body;
-
-    // Update or create portfolio summary
-    const updatedPortfolio = await prisma.portfolioSummary.upsert({
-      where: { userId: user.id },
-      update: { stocks },
-      create: { userId: user.id, stocks },
-    });
-
-    return res.json(updatedPortfolio);
-  }
-
-  return res.status(405).json({ error: "Method not allowed" });
+    return res.status(405).json({ error: "Method not allowed" });
 }
