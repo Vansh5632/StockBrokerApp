@@ -15,6 +15,8 @@ model User {
   image         String?
   accounts      Account[]
   sessions      Session[]
+  portfolio PortfolioSummary?
+  watchlist Watchlist?
 }
 
 model Account {
@@ -70,4 +72,15 @@ model Transaction {
   type      String   // "buy" or "sell"
   createdAt DateTime @default(now())
 }
-
+model PortfolioSummary {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id])
+  stocks    Json
+}
+model Watchlist {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id])
+  stocks    Json
+}
