@@ -7,7 +7,7 @@ import { watchlistState } from "../../store/watchlistAtom";
 export default function PortfolioSummary() {
     const { data: session } = useSession();
     const [portfolio, setPortfolio] = useRecoilState(portfolioState);
-    const watchlist = useRecoilState(watchlistState);
+    const [watchlist] = useRecoilState(watchlistState); // Fixed: only one value since it's not being updated here
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -28,6 +28,13 @@ export default function PortfolioSummary() {
         fetchPortfolio();
     }, [session, setPortfolio]);
 
+    // Save portfolio whenever holdings, tradeHistory, or funds change
+    useEffect(() => {
+        if (!session || loading) return;
+
+        savePortfolio();
+    }, [portfolio?.holdings, portfolio?.tradeHistory, portfolio?.funds, session, loading]);
+
     async function savePortfolio() {
         if (!session) return;
 
@@ -37,17 +44,16 @@ export default function PortfolioSummary() {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
-                holdings,
-                tradeHistory,
-                funds,
+                holdings: portfolio?.holdings || [],
+                tradeHistory: portfolio?.tradeHistory || [],
+                funds: portfolio?.funds || 10000,
             }),
         });
 
         if (!response.ok) {
             console.error("Failed to save portfolio:", response.statusText);
         }
-    };
-    
+    }
 
     const holdings = portfolio?.holdings || [];
     const tradeHistory = portfolio?.tradeHistory || [];
@@ -92,10 +98,6 @@ export default function PortfolioSummary() {
         if (totalInvestment <= 0) return 0;
         return ((currentValue - totalInvestment) / totalInvestment) * 100;
     }, [currentValue, totalInvested, realizedPL]);
-
-    useEffect(() => {
-        savePortfolio();
-    }, [funds, realizedPL]);
 
     return (
         <div className="bg-gray-800 text-white p-4 rounded-xl shadow-lg">

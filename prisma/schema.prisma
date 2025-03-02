@@ -15,7 +15,7 @@ model User {
   image         String?
   accounts      Account[]
   sessions      Session[]
-  portfolio     PortfolioSummary?
+  portfolio     Portfolio?
   watchlist     Watchlist?
 }
 
@@ -72,7 +72,7 @@ model Transaction {
   type      String   // "buy" or "sell"
   createdAt DateTime @default(now())
 }
-model PortfolioSummary {
+model Portfolio{
   id          String  @id @default(uuid())
   userId      String  @unique
   user        User    @relation(fields: [userId], references: [id])

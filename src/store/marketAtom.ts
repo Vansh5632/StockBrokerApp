@@ -1,7 +1,7 @@
 import { atom } from "recoil";
 
 export const stockPricesState = atom<{ [key: string]: number }>({
-  key: "stockPricesState",
+  key: "stockPrices",
   default: {
     AAPL: 150.0,
     NVDA: 500.0,
