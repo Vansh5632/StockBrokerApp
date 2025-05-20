@@ -4,123 +4,206 @@ import TransactionHistory from "@/components/Dashboard/TransactionHistory";
 import Watchlist from "@/components/Dashboard/Watchlist";
 import Footer from "@/components/layout/Footer";
 import LiveStockPrice from "@/components/trading/LiveStockPrice";
+import MarketOverview from "@/components/Dashboard/MarketOverview";
+import MarketNews from "@/components/Dashboard/MarketNews";
+import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
+import Link from "next/link";
 
 export default function Dashboard() {
+  const { data: session } = useSession();
+  const [userName, setUserName] = useState("Trader");
+  
+  useEffect(() => {
+    if (session?.user?.name) {
+      // Extract first name only
+      const firstName = session.user.name.split(' ')[0];
+      setUserName(firstName);
+    }
+  }, [session]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
-      <div className="container mx-auto p-4 sm:p-6">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 border-b border-indigo-200 dark:border-indigo-800 pb-4">
-          <h1 className="text-3xl sm:text-4xl font-bold text-indigo-800 dark:text-indigo-400 mb-2 sm:mb-0">
-            Dashboard
-          </h1>
-          <div className="text-sm text-gray-500 dark:text-gray-400">
-            Last updated: {new Date().toLocaleDateString()}
-          </div>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Portfolio Summary */}
-          <div className="col-span-1 md:col-span-2 lg:col-span-1 bg-white dark:bg-gray-800 shadow-lg rounded-xl overflow-hidden border border-indigo-50 dark:border-indigo-900 transition-all duration-300 hover:shadow-xl">
-            <div className="bg-gradient-to-r from-indigo-600 to-indigo-700 p-4 flex justify-between items-center">
-              <h2 className="text-lg font-semibold text-white">
-                Portfolio Summary
-              </h2>
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-indigo-200" viewBox="0 0 20 20" fill="currentColor">
-                <path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z" />
-                <path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z" />
-              </svg>
+      {/* Top navigation bar */}
+      <div className="sticky top-0 z-10 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 shadow-sm">
+        <div className="container mx-auto px-4 sm:px-6 py-4">
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold text-indigo-700 dark:text-indigo-400">
+                <span className="text-accent">V</span>broker
+              </h1>
             </div>
-            <div className="p-5">
-              <PortfolioSummary />
+            <div className="hidden md:flex items-center space-x-6">
+              <Link href="/dashboard" className="text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium">
+                Dashboard
+              </Link>
+              <Link href="/marketoverview" className="text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium">
+                Markets
+              </Link>
+              <Link href="/portfolio" className="text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium">
+                Portfolio
+              </Link>
+              <Link href="/orders" className="text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium">
+                Orders
+              </Link>
             </div>
-          </div>
-
-          {/* Quick Trade */}
-          <div className="col-span-1 bg-white dark:bg-gray-800 shadow-lg rounded-xl overflow-hidden border border-indigo-50 dark:border-indigo-900 transition-all duration-300 hover:shadow-xl">
-            <div className="bg-gradient-to-r from-emerald-600 to-emerald-700 p-4 flex justify-between items-center">
-              <h2 className="text-lg font-semibold text-white">
-                Quick Trade
-              </h2>
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-emerald-200" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <div className="p-5">
-              <QuickTrade />
-            </div>
-          </div>
-
-          {/* Watchlist */}
-          <div className="col-span-1 md:col-span-2 lg:col-span-1 bg-white dark:bg-gray-800 shadow-lg rounded-xl overflow-hidden border border-indigo-50 dark:border-indigo-900 transition-all duration-300 hover:shadow-xl">
-            <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-4 flex justify-between items-center">
-              <h2 className="text-lg font-semibold text-white">
-                Watchlist
-              </h2>
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-200" viewBox="0 0 20 20" fill="currentColor">
-                <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <div className="p-5">
-              <Watchlist />
-            </div>
-          </div>
-
-          {/* Live Stock Prices */}
-          <div className="col-span-1 bg-white dark:bg-gray-800 shadow-lg rounded-xl overflow-hidden border border-indigo-50 dark:border-indigo-900 transition-all duration-300 hover:shadow-xl">
-            <div className="bg-gradient-to-r from-purple-600 to-purple-700 p-4 flex justify-between items-center">
-              <h2 className="text-lg font-semibold text-white">
-                NVDA
-              </h2>
-              <div className="text-sm text-purple-200">Live Stock</div>
-            </div>
-            <div className="p-5">
-              <LiveStockPrice symbol={"NVDA"} />
-            </div>
-          </div>
-
-          <div className="col-span-1 bg-white dark:bg-gray-800 shadow-lg rounded-xl overflow-hidden border border-indigo-50 dark:border-indigo-900 transition-all duration-300 hover:shadow-xl">
-            <div className="bg-gradient-to-r from-purple-600 to-purple-700 p-4 flex justify-between items-center">
-              <h2 className="text-lg font-semibold text-white">
-                AAPL
-              </h2>
-              <div className="text-sm text-purple-200">Live Stock</div>
-            </div>
-            <div className="p-5">
-              <LiveStockPrice symbol={"AAPL"} />
-            </div>
-          </div>
-
-          <div className="col-span-1 bg-white dark:bg-gray-800 shadow-lg rounded-xl overflow-hidden border border-indigo-50 dark:border-indigo-900 transition-all duration-300 hover:shadow-xl">
-            <div className="bg-gradient-to-r from-purple-600 to-purple-700 p-4 flex justify-between items-center">
-              <h2 className="text-lg font-semibold text-white">
-                GOOGL
-              </h2>
-              <div className="text-sm text-purple-200">Live Stock</div>
-            </div>
-            <div className="p-5">
-              <LiveStockPrice symbol={"GOOGL"} />
-            </div>
-          </div>
-
-          {/* Transaction History */}
-          <div className="col-span-1 md:col-span-2 lg:col-span-3 bg-white dark:bg-gray-800 shadow-lg rounded-xl overflow-hidden border border-indigo-50 dark:border-indigo-900 transition-all duration-300 hover:shadow-xl">
-            <div className="bg-gradient-to-r from-amber-600 to-amber-700 p-4 flex justify-between items-center">
-              <h2 className="text-lg font-semibold text-white">
-                Transaction History
-              </h2>
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-amber-200" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <div className="p-5">
-              <TransactionHistory />
+            <div className="flex items-center gap-4">
+              <div className="bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 px-3 py-1.5 rounded-full text-sm">
+                <span className="hidden sm:inline">Balance: </span>${session?.user?.funds || 10000}
+              </div>
+              <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white">
+                  {userName?.charAt(0) || 'T'}
+                </div>
+                <span className="hidden md:inline font-medium">{userName}</span>
+              </div>
             </div>
           </div>
         </div>
       </div>
+
+      <div className="container mx-auto px-4 sm:px-6 py-6">
+        {/* Welcome section */}
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
+            Welcome back, {userName} 👋
+          </h2>
+          <p className="text-gray-600 dark:text-gray-400">
+            Here's what's happening with your portfolio today
+          </p>
+        </div>
+        
+        {/* Bento grid layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Portfolio Summary - Span 1 column on larger screens */}
+          <div className="col-span-1 row-span-1">
+            <div className="h-full bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+              <div className="bg-gradient-to-r from-indigo-600 to-indigo-700 p-4">
+                <h2 className="text-lg font-semibold text-white">Portfolio Summary</h2>
+              </div>
+              <div className="p-4">
+                <PortfolioSummary />
+              </div>
+            </div>
+          </div>
+          
+          {/* Market Overview - Span 2 columns on larger screens */}
+          <div className="col-span-1 lg:col-span-2 row-span-1">
+            <MarketOverview />
+          </div>
+          
+          {/* Watchlist - Span 1 column */}
+          <div className="col-span-1 row-span-1">
+            <div className="h-full bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+              <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-4">
+                <h2 className="text-lg font-semibold text-white">Watchlist</h2>
+              </div>
+              <div className="p-4 h-[400px] overflow-y-auto scrollbar-hide">
+                <Watchlist />
+              </div>
+            </div>
+          </div>
+          
+          {/* Quick Trade - Span 1 column */}
+          <div className="col-span-1 row-span-1">
+            <div className="h-full bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+              <div className="bg-gradient-to-r from-emerald-600 to-emerald-700 p-4">
+                <h2 className="text-lg font-semibold text-white">Quick Trade</h2>
+              </div>
+              <div className="p-4">
+                <QuickTrade />
+              </div>
+            </div>
+          </div>
+          
+          {/* Market News - Span 1 column */}
+          <div className="col-span-1 row-span-1 order-last lg:order-none">
+            <div className="h-full bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+              <div className="bg-gradient-to-r from-teal-600 to-teal-700 p-4 flex justify-between items-center">
+                <h2 className="text-lg font-semibold text-white">Market News</h2>
+                <span className="text-xs text-teal-200 bg-teal-800/50 px-2 py-1 rounded-full">LIVE</span>
+              </div>
+              <div className="p-4 h-[400px] overflow-y-auto scrollbar-hide">
+                <MarketNews />
+              </div>
+            </div>
+          </div>
+          
+          {/* Live Tickers - Span 1 column */}
+          <div className="col-span-1 row-span-1">
+            <div className="grid grid-cols-1 gap-4">
+              {/* NVDA */}
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+                <div className="bg-gradient-to-r from-purple-600 to-purple-700 p-3 flex justify-between items-center">
+                  <h2 className="text-sm font-semibold text-white">NVDA</h2>
+                  <div className="text-xs text-purple-200">Live Price</div>
+                </div>
+                <div className="p-3">
+                  <LiveStockPrice symbol="NVDA" />
+                </div>
+              </div>
+              
+              {/* AAPL */}
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+                <div className="bg-gradient-to-r from-purple-600 to-purple-700 p-3 flex justify-between items-center">
+                  <h2 className="text-sm font-semibold text-white">AAPL</h2>
+                  <div className="text-xs text-purple-200">Live Price</div>
+                </div>
+                <div className="p-3">
+                  <LiveStockPrice symbol="AAPL" />
+                </div>
+              </div>
+              
+              {/* GOOGL */}
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+                <div className="bg-gradient-to-r from-purple-600 to-purple-700 p-3 flex justify-between items-center">
+                  <h2 className="text-sm font-semibold text-white">GOOGL</h2>
+                  <div className="text-xs text-purple-200">Live Price</div>
+                </div>
+                <div className="p-3">
+                  <LiveStockPrice symbol="GOOGL" />
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Transaction History - Span full width */}
+          <div className="col-span-1 lg:col-span-3 row-span-1">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+              <div className="bg-gradient-to-r from-amber-600 to-amber-700 p-4 flex justify-between items-center">
+                <h2 className="text-lg font-semibold text-white">Transaction History</h2>
+                <Link href="/orders" className="text-sm text-amber-200 hover:text-white transition-colors">
+                  View all →
+                </Link>
+              </div>
+              <div className="p-4">
+                <TransactionHistory />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {/* Market trends banner */}
+      <div className="bg-gradient-to-r from-gray-900 to-indigo-900 py-8 mt-12">
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <div className="mb-6 md:mb-0">
+              <h3 className="text-xl font-bold text-white mb-2">Ready to explore more market trends?</h3>
+              <p className="text-indigo-200">Check out our detailed market overview page for in-depth analysis.</p>
+            </div>
+            <Link 
+              href="/marketoverview" 
+              className="px-6 py-3 bg-white text-indigo-700 font-medium rounded-lg hover:bg-gray-100 transition-colors"
+            >
+              View Market Overview
+            </Link>
+          </div>
+        </div>
+      </div>
+      
       <div className="mt-12">
-        <Footer/>
+        <Footer />
       </div>
     </div>
   );
