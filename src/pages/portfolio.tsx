@@ -7,6 +7,22 @@ import Footer from "@/components/layout/Footer";
 import TradeForm from "@/components/trading/TradeForm";
 import Portfolio from "@/components/trading/Portfolio";
 
+// Define types for our stock and user
+interface Stock {
+  symbol: string;
+  name?: string;
+  quantity?: number;
+  purchasePrice?: number;
+  currentPrice?: number;
+}
+
+interface ExtendedUser {
+  name?: string | null;
+  email?: string | null;
+  image?: string | null;
+  funds?: number;
+}
+
 export default function PortfolioPage() {
   const { data: session } = useSession();
   const [portfolio, setPortfolio] = useRecoilState(portfolioState);
@@ -14,16 +30,16 @@ export default function PortfolioPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("holdings");
   const [showTradeModal, setShowTradeModal] = useState(false);
-  const [selectedStock, setSelectedStock] = useState(null);
+  const [selectedStock, setSelectedStock] = useState<Stock | null>(null);
   
   // Ensure we have an array to work with for calculations
   const holdings = Array.isArray(portfolio.holdings) ? portfolio.holdings : [];
   
   // Calculate portfolio metrics
   const totalValue = holdings.reduce((total, stock) => 
-    total + (stock.currentPrice * stock.quantity), 0);
+    total + ((stock.currentPrice || 0) * (stock.quantity || 0)), 0);
   const totalGainLoss = holdings.reduce((total, stock) => 
-    total + ((stock.currentPrice - stock.purchasePrice) * stock.quantity), 0);
+    total + (((stock.currentPrice || 0) - (stock.purchasePrice || 0)) * (stock.quantity || 0)), 0);
   const percentageChange = totalValue > 0 
     ? ((totalGainLoss / (totalValue - totalGainLoss)) * 100).toFixed(2) 
     : "0.00";
@@ -53,7 +69,7 @@ export default function PortfolioPage() {
     fetchPortfolio();
   }, [session, setPortfolio]);
   
-  const handleTradeClick = (stock) => {
+  const handleTradeClick = (stock: Stock) => {
     setSelectedStock(stock);
     setShowTradeModal(true);
   };
@@ -85,7 +101,7 @@ export default function PortfolioPage() {
             </div>
             <div className="flex items-center gap-4">
               <div className="bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 px-3 py-1.5 rounded-full text-sm">
-                <span className="hidden sm:inline">Balance: </span>${session?.user?.funds || 10000}
+                <span className="hidden sm:inline">Balance: </span>${(session?.user as ExtendedUser)?.funds || 10000}
               </div>
               <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
                 <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white">
@@ -208,9 +224,14 @@ export default function PortfolioPage() {
                       </thead>
                       <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                         {holdings.map((stock) => {
-                          const value = stock.currentPrice * stock.quantity;
-                          const gainLoss = (stock.currentPrice - stock.purchasePrice) * stock.quantity;
-                          const percentChange = ((stock.currentPrice - stock.purchasePrice) / stock.purchasePrice * 100).toFixed(2);
+                          const purchasePrice = stock.purchasePrice || 0;
+                          const currentPrice = stock.currentPrice || 0;
+                          const quantity = stock.quantity || 0;
+                          const value = currentPrice * quantity;
+                          const gainLoss = (currentPrice - purchasePrice) * quantity;
+                          const percentChange = purchasePrice > 0
+                            ? ((currentPrice - purchasePrice) / purchasePrice * 100).toFixed(2)
+                            : "0.00";
                           
                           return (
                             <tr key={stock.symbol} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
@@ -222,9 +243,9 @@ export default function PortfolioPage() {
                                   </div>
                                 </div>
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{stock.quantity}</td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">${stock.purchasePrice.toFixed(2)}</td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">${stock.currentPrice.toFixed(2)}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{quantity}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">${purchasePrice.toFixed(2)}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">${currentPrice.toFixed(2)}</td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">${value.toFixed(2)}</td>
                               <td className="px-6 py-4 whitespace-nowrap">
                                 <div className={`text-sm ${gainLoss >= 0 ? 'text-green-500' : 'text-red-500'}`}>

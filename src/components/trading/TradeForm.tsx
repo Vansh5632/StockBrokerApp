@@ -1,8 +1,31 @@
 import { useState, useEffect } from "react";
 
-export default function TradeForm() {
-  const [marketData, setMarketData] = useState({});
-  const [symbol, setSymbol] = useState("AAPL");
+interface Stock {
+  symbol: string;
+  name?: string;
+  quantity?: number;
+  purchasePrice?: number;
+  currentPrice?: number;
+}
+
+interface MarketDataItem {
+  price: number;
+  change?: number;
+  volume?: number;
+}
+
+interface MarketData {
+  [symbol: string]: MarketDataItem;
+}
+
+interface TradeFormProps {
+  stock: Stock | null;
+  onComplete: () => void;
+}
+
+export default function TradeForm({ stock, onComplete }: TradeFormProps) {
+  const [marketData, setMarketData] = useState<MarketData>({});
+  const [symbol, setSymbol] = useState(stock?.symbol || "AAPL");
   const [qty, setQty] = useState(1);
   const [side, setSide] = useState("buy");
   const [status, setStatus] = useState("");
@@ -12,6 +35,13 @@ export default function TradeForm() {
       .then((res) => res.json())
       .then(setMarketData);
   }, []);
+
+  // Update symbol if stock prop changes
+  useEffect(() => {
+    if (stock?.symbol) {
+      setSymbol(stock.symbol);
+    }
+  }, [stock]);
 
   const handleTrade = async () => {
     setStatus("Placing order...");
@@ -25,6 +55,10 @@ export default function TradeForm() {
     const data = await response.json();
     if (data.success) {
       setStatus("Order placed successfully!");
+      // Call onComplete callback after successful trade
+      if (onComplete) {
+        setTimeout(onComplete, 1500); // Give user time to see success message
+      }
     } else {
       setStatus(`Error: ${data.error}`);
     }
@@ -34,9 +68,9 @@ export default function TradeForm() {
     <div className="p-4 bg-white shadow rounded-md">
       <h2 className="text-lg font-semibold mb-2">Trade Stocks</h2>
       <select value={symbol} onChange={(e) => setSymbol(e.target.value)} className="p-2 border rounded w-full mb-2">
-        {Object.keys(marketData).map((stock) => (
-          <option key={stock} value={stock}>
-            {stock} - ${marketData[stock]?.price.toFixed(2)}
+        {Object.keys(marketData).map((stockSymbol) => (
+          <option key={stockSymbol} value={stockSymbol}>
+            {stockSymbol} - ${marketData[stockSymbol]?.price.toFixed(2)}
           </option>
         ))}
       </select>
@@ -44,7 +78,7 @@ export default function TradeForm() {
         type="number"
         placeholder="Quantity"
         value={qty}
-        onChange={(e) => setQty(e.target.value)}
+        onChange={(e) => setQty(Number(e.target.value))}
         className="p-2 border rounded w-full mb-2"
       />
       <select value={side} onChange={(e) => setSide(e.target.value)} className="p-2 border rounded w-full mb-2">

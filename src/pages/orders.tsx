@@ -6,11 +6,28 @@ import Footer from "@/components/layout/Footer";
 import OrderList from "@/components/Orders/OrderList";
 import {prisma} from "@/lib/prisma";
 
+interface ExtendedUser {
+  name?: string | null;
+  email?: string | null;
+  image?: string | null;
+  funds?: number;
+}
+
+interface Order {
+  id: string;
+  symbol: string;
+  type: string;
+  quantity: number;
+  price: string | number;
+  status?: string;
+  createdAt: string | Date;
+}
+
 export default function OrdersPage({ initialOrders }) {
   const { data: session } = useSession();
   const [userName, setUserName] = useState("Trader");
   const [isLoading, setIsLoading] = useState(true);
-  const [orders, setOrders] = useState(initialOrders);
+  const [orders, setOrders] = useState<Order[]>(initialOrders || []);
   const [activeTab, setActiveTab] = useState("all");
   
   useEffect(() => {
@@ -38,15 +55,15 @@ export default function OrdersPage({ initialOrders }) {
     fetchOrders();
   }, [session]);
   
-  // Filter orders by status
+  // Filter orders by status - add null check for order.status
   const filteredOrders = activeTab === "all" 
     ? orders 
-    : orders.filter(order => order.status.toLowerCase() === activeTab);
+    : orders.filter(order => order.status && order.status.toLowerCase() === activeTab);
   
-  // Get counts for each category
-  const pendingCount = orders.filter(order => order.status.toLowerCase() === "pending").length;
-  const completedCount = orders.filter(order => order.status.toLowerCase() === "completed").length;
-  const cancelledCount = orders.filter(order => order.status.toLowerCase() === "cancelled").length;
+  // Get counts for each category - add null checks for order.status
+  const pendingCount = orders.filter(order => order.status && order.status.toLowerCase() === "pending").length;
+  const completedCount = orders.filter(order => order.status && order.status.toLowerCase() === "completed").length;
+  const cancelledCount = orders.filter(order => order.status && order.status.toLowerCase() === "cancelled").length;
   
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
@@ -226,7 +243,7 @@ export default function OrdersPage({ initialOrders }) {
                               ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' 
                               : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
                           }`}>
-                            {order.type.toUpperCase()}
+                            {order.type?.toUpperCase() || 'UNKNOWN'}
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{order.quantity}</td>
@@ -241,7 +258,7 @@ export default function OrdersPage({ initialOrders }) {
                                 ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400'
                                 : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
                           }`}>
-                            {order.status.toUpperCase()}
+                            {order.status?.toUpperCase() || 'UNKNOWN'}
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
