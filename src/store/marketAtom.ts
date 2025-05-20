@@ -1,79 +1,46 @@
 import { atom } from "recoil";
 
-// Market data interface
-export interface StockPrice {
+// Stock data interface
+export interface StockData {
   symbol: string;
+  name?: string;
   price: number;
-  change: number;
-  changePercent: number;
-  volume: number;
-  high: number;
-  low: number;
-  open: number;
-  previousClose: number;
-  lastUpdated: Date;
+  previousClose?: number;
+  open?: number;
+  high?: number;
+  low?: number;
+  volume?: number;
+  change?: number;
+  changePercent?: number;
+  lastUpdated?: Date;
 }
-
-// Full market data state
-export const marketDataState = atom<Record<string, StockPrice>>({
-  key: "marketData",
-  default: {},
-});
-
-// Stock prices for backward compatibility
-export const stockPricesState = atom<{ [key: string]: number }>({
-  key: "stockPrices",
-  default: {
-    AAPL: 150.0,
-    NVDA: 500.0,
-    TSLA: 200.0,
-    AMZN: 3200.0,
-    MSFT: 290.0,
-  },
-});
-
-// Market indices state
-export const marketIndicesState = atom<Array<{ name: string; value: number; change: number }>>({
-  key: "marketIndices",
-  default: [
-    { name: "S&P 500", value: 5328.27, change: 0.28 },
-    { name: "Nasdaq", value: 16748.33, change: 0.43 },
-    { name: "Dow Jones", value: 38799.50, change: -0.12 },
-    { name: "Russell 2000", value: 2079.56, change: 0.16 }
-  ],
-});
-
-// Market sentiment state (ranges from -1 to 1)
-export const marketSentimentState = atom<number>({
-  key: "marketSentiment",
-  default: 0, // Neutral
-});
 
 // Order book state for current stock
 export interface OrderBookEntry {
   id: string;
-  userId: string;
-  symbol: string;
-  quantity: number;
-  price: number;
   type: 'buy' | 'sell';
-  status: string;
-  created: Date;
+  price: number;
+  quantity: number;
+  userId?: string;
+  timestamp?: Date;
+  status?: string;
 }
 
-export interface OrderBook {
-  buy: OrderBookEntry[];
-  sell: OrderBookEntry[];
-}
-
-export const orderBookState = atom<Record<string, OrderBook>>({
-  key: "orderBook",
+// Full market data state
+export const marketDataState = atom<Record<string, StockData>>({
+  key: "marketDataState",
   default: {},
 });
 
 // Stock price history for charts
 export const stockPriceHistoryState = atom<Record<string, number[]>>({
-  key: "stockPriceHistory",
+  key: "stockPriceHistoryState",
+  default: {},
+});
+
+// Order book state
+export const orderBookState = atom<Record<string, { buy: OrderBookEntry[]; sell: OrderBookEntry[] }>>({
+  key: "orderBookState",
   default: {},
 });
 
@@ -81,16 +48,54 @@ export const stockPriceHistoryState = atom<Record<string, number[]>>({
 export interface Transaction {
   id: string;
   symbol: string;
-  buyOrderId: string;
-  sellOrderId: string;
   price: number;
   quantity: number;
+  buyOrderId: string;
+  sellOrderId: string;
   timestamp: Date;
   buyerId?: string;
   sellerId?: string;
 }
 
-export const recentTransactionsState = atom<Transaction[]>({
-  key: "recentTransactions",
+export const transactionsState = atom<Transaction[]>({
+  key: "transactionsState",
+  default: [],
+});
+
+// Market parameters state
+export const marketParametersState = atom<{
+  baseVolatility: number;
+  marketSentiment: number;
+  tradingVolumeFactor: number;
+  updateInterval: number;
+  orderImpactFactor: number;
+  momentumFactor: number;
+}>({
+  key: "marketParametersState",
+  default: {
+    baseVolatility: 0.002,
+    marketSentiment: 0,
+    tradingVolumeFactor: 0.5,
+    updateInterval: 1000,
+    orderImpactFactor: 0.001,
+    momentumFactor: 0.3,
+  },
+});
+
+// Socket connection status
+export const socketConnectionState = atom<{
+  connected: boolean;
+  error: string | null;
+}>({
+  key: "socketConnectionState",
+  default: {
+    connected: false,
+    error: null,
+  },
+});
+
+// Subscribed symbols for WebSocket
+export const subscribedSymbolsState = atom<string[]>({
+  key: "subscribedSymbolsState",
   default: [],
 });
