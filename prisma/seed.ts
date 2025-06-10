@@ -28,6 +28,59 @@ async function seedStocks() {
   console.log("✅ Fake stock market data seeded.");
 }
 
-seedStocks()
+async function seedTransactions() {
+  const sampleTransactions = [
+    {
+      symbol: "AAPL",
+      name: "Apple Inc.",
+      price: 150.25,
+      quantity: 10,
+      type: "buy",
+    },
+    {
+      symbol: "GOOGL", 
+      name: "Alphabet Inc.",
+      price: 2800.75,
+      quantity: 2,
+      type: "buy",
+    },
+    {
+      symbol: "TSLA",
+      name: "Tesla Inc.", 
+      price: 700.5,
+      quantity: 5,
+      type: "sell",
+    },
+    {
+      symbol: "MSFT",
+      name: "Microsoft Corp.",
+      price: 300.3,
+      quantity: 15,
+      type: "buy",
+    },
+    {
+      symbol: "AAPL",
+      name: "Apple Inc.",
+      price: 148.75,
+      quantity: 5,
+      type: "sell",
+    },
+  ];
+
+  for (const transaction of sampleTransactions) {
+    await prisma.transaction.create({
+      data: transaction,
+    });
+  }
+
+  console.log("✅ Sample transaction data seeded.");
+}
+
+async function main() {
+  await seedStocks();
+  await seedTransactions();
+}
+
+main()
   .catch((error) => console.error(error))
   .finally(async () => await prisma.$disconnect());

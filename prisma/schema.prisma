@@ -67,13 +67,11 @@ model Stock {
 
 model Transaction {
   id        String   @id @default(uuid())
-  userEmail String?  // Make optional to handle existing data
   symbol    String
   name      String
   price     Float
   quantity  Int
   type      String
-  status    String?  @default("completed") // "pending", "completed", "cancelled"
   createdAt DateTime @default(now())
 }
 

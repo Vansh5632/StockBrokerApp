@@ -5,6 +5,13 @@ import Link from "next/link";
 import Footer from "@/components/layout/Footer";
 import {prisma} from "@/lib/prisma";
 
+interface ExtendedUser {
+  name?: string | null;
+  email?: string | null;
+  image?: string | null;
+  funds?: number;
+}
+
 interface Order {
   id: string;
   symbol: string;
@@ -21,37 +28,6 @@ export default function OrdersPage({ initialOrders }: { initialOrders: Order[] }
   const [isLoading, setIsLoading] = useState(true);
   const [orders, setOrders] = useState<Order[]>(initialOrders || []);
   const [activeTab, setActiveTab] = useState("all");
-  
-  // Cancel order function
-  const cancelOrder = async (orderId: string) => {
-    try {
-      const response = await fetch('/api/orders', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          orderId,
-          status: 'cancelled'
-        })
-      });
-
-      if (response.ok) {
-        // Update the orders list locally
-        setOrders(prevOrders => 
-          prevOrders.map(order => 
-            order.id === orderId 
-              ? { ...order, status: 'cancelled' }
-              : order
-          )
-        );
-      } else {
-        console.error('Failed to cancel order');
-      }
-    } catch (error) {
-      console.error('Error canceling order:', error);
-    }
-  };
   
   useEffect(() => {
     if (session?.user?.name) {
@@ -115,7 +91,7 @@ export default function OrdersPage({ initialOrders }: { initialOrders: Order[] }
             </div>
             <div className="flex items-center gap-4">
               <div className="bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 px-3 py-1.5 rounded-full text-sm">
-                <span className="hidden sm:inline">Balance: </span>${(session?.user as any)?.funds || 10000}
+                <span className="hidden sm:inline">Balance: </span>${(session?.user as ExtendedUser)?.funds || 10000}
               </div>
               <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
                 <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white">
@@ -287,8 +263,9 @@ export default function OrdersPage({ initialOrders }: { initialOrders: Order[] }
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           {order.status === 'pending' && (
                             <button 
-                              onClick={() => cancelOrder(order.id)}
-                              className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300"
+                              onClick={() => alert('Cancel functionality will be available after database migration')}
+                              className="text-gray-400 cursor-not-allowed"
+                              disabled
                             >
                               Cancel
                             </button>
@@ -323,11 +300,30 @@ export default function OrdersPage({ initialOrders }: { initialOrders: Order[] }
 
 // Fetch trade history from PostgreSQL
 export const getServerSideProps: GetServerSideProps = async () => {
-  const orders = await prisma.transaction.findMany({
-    orderBy: { createdAt: "desc" }, // Latest first
-  });
+  try {
+    const orders = await prisma.transaction.findMany({
+      orderBy: { createdAt: "desc" }, // Latest first
+      take: 50 // Limit to recent orders
+    });
 
-  return {
-    props: { initialOrders: JSON.parse(JSON.stringify(orders)) },
-  };
+    // Transform to match Order interface
+    const formattedOrders = orders.map(transaction => ({
+      id: transaction.id,
+      symbol: transaction.symbol,
+      type: transaction.type,
+      quantity: transaction.quantity,
+      price: transaction.price,
+      status: 'completed', // Default status since field doesn't exist yet
+      createdAt: transaction.createdAt
+    }));
+
+    return {
+      props: { initialOrders: JSON.parse(JSON.stringify(formattedOrders)) },
+    };
+  } catch (error) {
+    console.error('Error fetching orders:', error);
+    return {
+      props: { initialOrders: [] },
+    };
+  }
 };

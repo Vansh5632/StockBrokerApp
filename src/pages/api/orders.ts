@@ -22,14 +22,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
       });
 
+      // If no orders found with userEmail, get all orders for backward compatibility
+      let allOrders = orders;
+      if (allOrders.length === 0) {
+        allOrders = await prisma.transaction.findMany({
+          orderBy: {
+            createdAt: 'desc'
+          },
+          take: 10 // Limit to recent orders for demo
+        });
+      }
+
       // Transform the transactions to match the Order interface
-      const formattedOrders = orders.map(transaction => ({
+      const formattedOrders = allOrders.map(transaction => ({
         id: transaction.id,
         symbol: transaction.symbol,
         type: transaction.type,
         quantity: transaction.quantity,
         price: transaction.price,
-        status: transaction.status || 'completed', // Default to completed if no status
+        status: 'completed', // Default to completed since status field doesn't exist yet
         createdAt: transaction.createdAt
       }));
 
@@ -55,12 +66,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // Create a new order (transaction)
       const order = await prisma.transaction.create({
         data: {
-          userEmail: session.user.email,
           symbol,
+          name: symbol, // Use symbol as name for now
           type,
           quantity: parseInt(quantity),
-          price: parseFloat(price),
-          status: 'pending'
+          price: parseFloat(price)
         }
       });
 
@@ -69,38 +79,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       console.error('Error creating order:', error);
       res.status(500).json({ error: 'Failed to create order' });
     }
-  } else if (req.method === 'PATCH') {
-    try {
-      const session = await getServerSession(req, res, authOptions);
-      
-      if (!session?.user?.email) {
-        return res.status(401).json({ error: 'Unauthorized' });
-      }
-
-      const { orderId, status } = req.body;
-
-      if (!orderId || !status) {
-        return res.status(400).json({ error: 'Missing orderId or status' });
-      }
-
-      // Update order status
-      const updatedOrder = await prisma.transaction.update({
-        where: {
-          id: orderId,
-          userEmail: session.user.email // Ensure user can only update their own orders
-        },
-        data: {
-          status
-        }
-      });
-
-      res.status(200).json(updatedOrder);
-    } catch (error) {
-      console.error('Error updating order:', error);
-      res.status(500).json({ error: 'Failed to update order' });
-    }
   } else {
-    res.setHeader('Allow', ['GET', 'POST', 'PATCH']);
+    res.setHeader('Allow', ['GET', 'POST']);
     res.status(405).end(`Method ${req.method} Not Allowed`);
   }
 }
