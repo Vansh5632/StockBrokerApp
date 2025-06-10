@@ -18,7 +18,7 @@ const availableStocks: Stock[] = [
 
 // Define the type of the watchlist state
 const watchlistState = atom<Stock[]>({
-  key: "watchlistState",
+  key: "vbroker_watchlistState",
   default: [],
 });
 

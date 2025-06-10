@@ -28,19 +28,25 @@ export interface OrderBookEntry {
 
 // Full market data state
 export const marketDataState = atom<Record<string, StockData>>({
-  key: "marketDataState",
+  key: "vbroker_marketDataState",
+  default: {},
+});
+
+// Simple stock prices state (for backward compatibility)
+export const stockPricesState = atom<Record<string, number>>({
+  key: "vbroker_stockPricesState",
   default: {},
 });
 
 // Stock price history for charts
 export const stockPriceHistoryState = atom<Record<string, number[]>>({
-  key: "stockPriceHistoryState",
+  key: "vbroker_stockPriceHistoryState",
   default: {},
 });
 
 // Order book state
 export const orderBookState = atom<Record<string, { buy: OrderBookEntry[]; sell: OrderBookEntry[] }>>({
-  key: "orderBookState",
+  key: "vbroker_orderBookState",
   default: {},
 });
 
@@ -58,7 +64,7 @@ export interface Transaction {
 }
 
 export const transactionsState = atom<Transaction[]>({
-  key: "transactionsState",
+  key: "vbroker_transactionsState",
   default: [],
 });
 
@@ -71,7 +77,7 @@ export const marketParametersState = atom<{
   orderImpactFactor: number;
   momentumFactor: number;
 }>({
-  key: "marketParametersState",
+  key: "vbroker_marketParametersState",
   default: {
     baseVolatility: 0.002,
     marketSentiment: 0,
@@ -87,7 +93,7 @@ export const socketConnectionState = atom<{
   connected: boolean;
   error: string | null;
 }>({
-  key: "socketConnectionState",
+  key: "vbroker_socketConnectionState",
   default: {
     connected: false,
     error: null,
@@ -96,6 +102,6 @@ export const socketConnectionState = atom<{
 
 // Subscribed symbols for WebSocket
 export const subscribedSymbolsState = atom<string[]>({
-  key: "subscribedSymbolsState",
+  key: "vbroker_subscribedSymbolsState",
   default: [],
 });

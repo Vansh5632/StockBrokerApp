@@ -9,7 +9,7 @@ interface TradeHistory {
 }
 
 export const portfolioState = atom({
-  key: 'portfolioState',
+  key: 'vbroker_portfolioState',
   default: {
     funds: 100000,
     holdings: [] as any[],
