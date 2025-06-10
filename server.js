@@ -1,9 +1,9 @@
 // server.js
-const { createServer } = require('http');
-const { parse } = require('url');
-const next = require('next');
-const { Server } = require('socket.io');
-const { setupMarketSimulator } = require('./marketSimulator');
+import { createServer } from 'http';
+import { parse } from 'url';
+import next from 'next';
+import { Server } from 'socket.io';
+import { setupMarketSimulator } from './marketSimulator.js';
 
 const dev = process.env.NODE_ENV !== 'production';
 const app = next({ dev });

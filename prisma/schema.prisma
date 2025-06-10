@@ -3,19 +3,19 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"  // Change this if using MySQL, SQLite, etc.
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
 model User {
-  id            String    @id @default(cuid())
+  id            String     @id @default(cuid())
   name          String?
-  email         String?   @unique
-  emailVerified DateTime?
+  email         String?    @unique
   image         String?
+  emailVerified DateTime?
   accounts      Account[]
-  sessions      Session[]
   portfolio     Portfolio?
+  sessions      Session[]
   watchlist     Watchlist?
 }
 
@@ -28,10 +28,10 @@ model Account {
   refresh_token     String?
   access_token      String?
   expires_at        Int?
-  token_type        String?
-  scope             String?
   id_token          String?
+  scope             String?
   session_state     String?
+  token_type        String?
   user              User    @relation(fields: [userId], references: [id])
 
   @@unique([provider, providerAccountId])
@@ -52,38 +52,43 @@ model VerificationToken {
 
   @@unique([identifier, token])
 }
+
 model Stock {
-  id             String   @id @default(uuid())
-  symbol         String   @unique
-  companyName    String
-  price          Float
-  volume         Int
-  change         Float
-  changePercent  Float
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id            String   @id @default(uuid())
+  symbol        String   @unique
+  companyName   String
+  price         Float
+  volume        Int
+  change        Float
+  changePercent Float
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
+
 model Transaction {
   id        String   @id @default(uuid())
+  userEmail String?  // Make optional to handle existing data
   symbol    String
   name      String
   price     Float
   quantity  Int
-  type      String   // "buy" or "sell"
+  type      String
+  status    String?  @default("completed") // "pending", "completed", "cancelled"
   createdAt DateTime @default(now())
 }
-model Portfolio{
-  id          String  @id @default(uuid())
-  userId      String  @unique
-  user        User    @relation(fields: [userId], references: [id])
-  holdings    Json    // Stores current holdings as JSON
-  tradeHistory Json   // Stores trade history as JSON
-  funds       Float   // Available funds for trading
+
+model Portfolio {
+  id           String @id @default(uuid())
+  userId       String @unique
+  holdings     Json
+  tradeHistory Json
+  funds        Float
+  user         User   @relation(fields: [userId], references: [id])
 }
 
 model Watchlist {
-  id        String   @id @default(uuid())
-  userId    String   @unique
-  user      User     @relation(fields: [userId], references: [id])
-  stocks    Json
+  id     String @id @default(uuid())
+  userId String @unique
+  stocks Json
+  user   User   @relation(fields: [userId], references: [id])
 }

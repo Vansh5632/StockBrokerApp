@@ -3,15 +3,7 @@ import { GetServerSideProps } from "next";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import Footer from "@/components/layout/Footer";
-import OrderList from "@/components/Orders/OrderList";
 import {prisma} from "@/lib/prisma";
-
-interface ExtendedUser {
-  name?: string | null;
-  email?: string | null;
-  image?: string | null;
-  funds?: number;
-}
 
 interface Order {
   id: string;
@@ -23,12 +15,43 @@ interface Order {
   createdAt: string | Date;
 }
 
-export default function OrdersPage({ initialOrders }) {
+export default function OrdersPage({ initialOrders }: { initialOrders: Order[] }) {
   const { data: session } = useSession();
   const [userName, setUserName] = useState("Trader");
   const [isLoading, setIsLoading] = useState(true);
   const [orders, setOrders] = useState<Order[]>(initialOrders || []);
   const [activeTab, setActiveTab] = useState("all");
+  
+  // Cancel order function
+  const cancelOrder = async (orderId: string) => {
+    try {
+      const response = await fetch('/api/orders', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          orderId,
+          status: 'cancelled'
+        })
+      });
+
+      if (response.ok) {
+        // Update the orders list locally
+        setOrders(prevOrders => 
+          prevOrders.map(order => 
+            order.id === orderId 
+              ? { ...order, status: 'cancelled' }
+              : order
+          )
+        );
+      } else {
+        console.error('Failed to cancel order');
+      }
+    } catch (error) {
+      console.error('Error canceling order:', error);
+    }
+  };
   
   useEffect(() => {
     if (session?.user?.name) {
@@ -92,7 +115,7 @@ export default function OrdersPage({ initialOrders }) {
             </div>
             <div className="flex items-center gap-4">
               <div className="bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 px-3 py-1.5 rounded-full text-sm">
-                <span className="hidden sm:inline">Balance: </span>${session?.user?.funds || 10000}
+                <span className="hidden sm:inline">Balance: </span>${(session?.user as any)?.funds || 10000}
               </div>
               <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
                 <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white">
@@ -247,8 +270,8 @@ export default function OrdersPage({ initialOrders }) {
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{order.quantity}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">${parseFloat(order.price).toFixed(2)}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">${(order.quantity * parseFloat(order.price)).toFixed(2)}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">${parseFloat(String(order.price)).toFixed(2)}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">${(order.quantity * parseFloat(String(order.price))).toFixed(2)}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{new Date(order.createdAt).toLocaleDateString()}</td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
@@ -264,11 +287,7 @@ export default function OrdersPage({ initialOrders }) {
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           {order.status === 'pending' && (
                             <button 
-                              onClick={() => {
-                                // Implement cancel order functionality here
-                                console.log("Cancel order:", order.id);
-                                // Update order status and refresh the list
-                              }}
+                              onClick={() => cancelOrder(order.id)}
                               className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300"
                             >
                               Cancel
