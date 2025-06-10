@@ -2,8 +2,10 @@ import PortfolioSummary from "@/components/Dashboard/PortfolioSummary";
 import QuickTrade from "@/components/Dashboard/QuickTrade";
 import TransactionHistory from "@/components/Dashboard/TransactionHistory";
 import Watchlist from "@/components/Dashboard/Watchlist";
+import MarketStatusIndicator from "@/components/Dashboard/MarketStatusIndicator";
 import Footer from "@/components/layout/Footer";
 import LiveStockPrice from "@/components/trading/LiveStockPrice";
+import MarketDataProvider from "@/components/trading/MarketDataProvider";
 import MarketOverview from "@/components/Dashboard/MarketOverview";
 import MarketNews from "@/components/Dashboard/MarketNews";
 import { useEffect, useState } from "react";
@@ -23,7 +25,8 @@ export default function Dashboard() {
   }, [session]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+    <MarketDataProvider>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
       {/* Top navigation bar */}
       <div className="sticky top-0 z-10 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 shadow-sm">
         <div className="container mx-auto px-4 sm:px-6 py-4">
@@ -48,8 +51,9 @@ export default function Dashboard() {
               </Link>
             </div>
             <div className="flex items-center gap-4">
+              <MarketStatusIndicator />
               <div className="bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 px-3 py-1.5 rounded-full text-sm">
-                <span className="hidden sm:inline">Balance: </span>${session?.user?.funds || 10000}
+                <span className="hidden sm:inline">Balance: </span>$10,000
               </div>
               <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
                 <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white">
@@ -206,5 +210,6 @@ export default function Dashboard() {
         <Footer />
       </div>
     </div>
+    </MarketDataProvider>
   );
 }

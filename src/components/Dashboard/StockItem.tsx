@@ -2,11 +2,12 @@ import React, { useState, useEffect } from "react";
 import { useRecoilState } from "recoil";
 import { watchlistState, Stock } from "../../store/watchlistAtom";
 import { portfolioState } from "../../store/portfolioAtom";
+import { useStockPrice } from "../../utils/socketClient";
 
 export default function StockItem({ 
     symbol, 
     name, 
-    price, 
+    price: initialPrice, 
     quantity: initialQuantity, 
     onRemove 
 }: Stock & { onRemove: (symbol: string) => void }) {
@@ -14,37 +15,31 @@ export default function StockItem({
     const [portfolio, setPortfolio] = useRecoilState(portfolioState);
     const [tradeQuantity, setTradeQuantity] = useState(1);
     const [loading, setLoading] = useState(false);
-    const [currentPrice, setCurrentPrice] = useState(price);
+    
+    // Use real-time price from socket connection
+    const { price: realTimePrice, isLoading: priceLoading } = useStockPrice(symbol);
+    const currentPrice = realTimePrice || initialPrice;
 
     // Get the most up-to-date quantity from the watchlist state instead of props
     const getCurrentStock = () => {
         return watchlist.find(stock => stock.symbol === symbol);
     };
 
-    // Simulate stock price fluctuations
+    // Update watchlist with real-time price data
     useEffect(() => {
-        const intervalId = setInterval(() => {
-            const priceChange = (Math.random() * 0.02 - 0.01) * price; // Random change between -1% to +1%
-            const newPrice = Math.max(0, currentPrice + priceChange);
-            setCurrentPrice(newPrice);
-
-            // Update watchlist stock price
+        if (realTimePrice && realTimePrice !== initialPrice) {
             setWatchlist((prev) => {
                 return prev.map((stock) =>
                     stock.symbol === symbol
                         ? {
-                            symbol: stock.symbol,
-                            name: stock.name,
-                            price: newPrice,
-                            quantity: stock.quantity
+                            ...stock,
+                            price: realTimePrice
                         }
                         : stock
                 );
             });
-        }, 5000);
-
-        return () => clearInterval(intervalId);
-    }, [price, symbol, setWatchlist, currentPrice]);
+        }
+    }, [realTimePrice, symbol, setWatchlist, initialPrice]);
 
     // Handle Buy/Sell Transactions
     const updateStockQuantity = async (type: "buy" | "sell") => {
@@ -179,10 +174,27 @@ export default function StockItem({
     const currentQuantity = currentStock?.quantity ?? initialQuantity;
 
     return (
-        <li className="flex justify-between items-center p-4 border rounded-lg shadow-md bg-gray-800 text-white">
-            <div>
-                <p className="font-semibold">{name} ({symbol})</p>
-                <p className="text-gray-400">💰 ${currentPrice.toFixed(2)}</p>
+        <li className="flex justify-between items-center p-4 border rounded-lg shadow-md bg-gray-800 text-white transition-all duration-300 hover:shadow-lg">
+            <div className="flex-1">
+                <div className="flex items-center gap-2">
+                    <p className="font-semibold">{name} ({symbol})</p>
+                    {priceLoading && (
+                        <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+                    )}
+                </div>
+                <div className="flex items-center gap-2">
+                    <p className="text-gray-400">💰 ${currentPrice.toFixed(2)}</p>
+                    {realTimePrice && (
+                        <span className={`text-xs px-2 py-1 rounded ${
+                            (realTimePrice - initialPrice) >= 0 
+                                ? 'bg-green-500/20 text-green-400' 
+                                : 'bg-red-500/20 text-red-400'
+                        }`}>
+                            {(realTimePrice - initialPrice) >= 0 ? '↗' : '↘'} 
+                            {Math.abs(((realTimePrice - initialPrice) / initialPrice) * 100).toFixed(2)}%
+                        </span>
+                    )}
+                </div>
                 <p className="text-gray-400">📦 Holdings: {currentQuantity}</p>
             </div>
             <div className="flex gap-2 items-center">
@@ -191,25 +203,26 @@ export default function StockItem({
                     min="1"
                     value={tradeQuantity}
                     onChange={(e) => setTradeQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                    className="bg-gray-700 text-white w-14 p-1 border rounded-md text-center"
+                    className="bg-gray-700 text-white w-16 p-2 border rounded-md text-center focus:ring-2 focus:ring-blue-500"
                 />
                 <button
-                    className="bg-green-500 text-white px-3 py-1 rounded-md hover:bg-green-600"
+                    className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     onClick={() => updateStockQuantity("buy")}
                     disabled={loading}
                 >
-                    {loading ? "Processing..." : "Buy"}
+                    {loading ? "⏳" : "Buy"}
                 </button>
                 <button
-                    className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600"
+                    className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     onClick={() => updateStockQuantity("sell")}
                     disabled={loading || currentQuantity < tradeQuantity}
                 >
-                    {loading ? "Processing..." : "Sell"}
+                    {loading ? "⏳" : "Sell"}
                 </button>
                 <button 
-                    className="bg-gray-600 text-white px-3 py-1 rounded-md hover:bg-gray-500" 
+                    className="bg-gray-600 text-white px-3 py-2 rounded-md hover:bg-gray-500 transition-colors" 
                     onClick={() => onRemove(symbol)}
+                    title="Remove from watchlist"
                 >
                     ❌
                 </button>

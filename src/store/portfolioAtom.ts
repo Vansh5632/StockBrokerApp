@@ -3,9 +3,11 @@ import { atom } from 'recoil';
 interface TradeHistory {
   type: string;
   symbol: string;
+  name: string;
   quantity: number;
   buyPrice: number;
-  sellPrice: number;
+  sellPrice: number | null;
+  timestamp: string;
 }
 
 export const portfolioState = atom({
@@ -18,3 +20,5 @@ export const portfolioState = atom({
     tradeHistory: [] as TradeHistory[],
   }
 });
+
+export type { TradeHistory };

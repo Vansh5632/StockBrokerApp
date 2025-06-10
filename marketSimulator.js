@@ -19,15 +19,15 @@ const marketState = {
 
 // Market parameters - these affect price movements
 const MARKET_PARAMS = {
-  baseVolatility: 0.002, // Base level price movement (0.2% per tick)
+  baseVolatility: 0.003, // Increased base level price movement (0.3% per tick)
   marketSentiment: 0, // Range from -1 (bearish) to 1 (bullish)
   tradingVolumeFactor: 0.5, // How much trading affects price
-  updateInterval: 1000, // Update prices every 1000ms (1 second)
+  updateInterval: 2000, // Update prices every 2000ms (2 seconds) for more visible changes
   orderImpactFactor: 0.001, // How much each order affects price
   momentumFactor: 0.3, // How much previous price changes affect current ones
   sentimentChangeRate: 0.05, // How quickly market sentiment can change
   newsImpactFactor: 0.2, // How much news affects prices
-  randomWalkFactor: 0.4 // Random price movement factor
+  randomWalkFactor: 0.6 // Increased random price movement factor for more dynamic prices
 };
 
 // Simulated stock data
@@ -331,8 +331,8 @@ async function persistTransaction(transaction) {
   }
 }
 
-// Update stock prices in the database periodically
-async function persistStockPrices() {
+// Update stock prices in the database periodically (renamed for consistency)
+async function persistMarketData() {
   try {
     const updates = Object.values(marketState.stocks).map(stock => {
       return prisma.stock.update({
@@ -429,73 +429,78 @@ function getAllStockData() {
   }));
 }
 
-// Setup market simulator
+// Enhanced market simulator setup
 function setupMarketSimulator(io, stockSubscriptions) {
+  console.log('Setting up enhanced market simulator...');
+  
   // Initialize market data
   initializeMarketData().then(() => {
-    console.log('Market data initialized');
+    console.log('Market data initialized - Starting real-time price updates');
     
-    // Start price update timer
+    // Enhanced price update timer with better broadcasting
     setInterval(() => {
       updateStockPrices();
       
-      // Send updates to subscribed clients
+      // Broadcast to ALL clients for continuous updates
+      const marketData = Object.values(marketState.stocks);
+      io.emit('marketUpdate', marketData);
+      
+      // Send individual stock updates to subscribed clients
       Object.keys(marketState.stocks).forEach(symbol => {
         const stockData = marketState.stocks[symbol];
         
-        if (stockSubscriptions.has(symbol)) {
-          const subscribers = stockSubscriptions.get(symbol);
-          
-          if (subscribers.size > 0) {
-            io.to(Array.from(subscribers)).emit('stockUpdate', {
-              symbol: stockData.symbol,
-              price: stockData.price,
-              change: stockData.change,
-              changePercent: stockData.changePercent,
-              high: stockData.high,
-              low: stockData.low,
-              volume: stockData.volume,
-              lastUpdated: stockData.lastUpdated
-            });
-          }
-        }
+        // Emit to all clients subscribed to this specific stock
+        io.to(`stock:${symbol}`).emit('stockUpdate', {
+          symbol: stockData.symbol,
+          price: stockData.price,
+          change: stockData.change,
+          changePercent: stockData.changePercent,
+          high: stockData.high,
+          low: stockData.low,
+          volume: stockData.volume,
+          lastUpdated: stockData.lastUpdated
+        });
+        
+        // Also emit price update for backward compatibility
+        io.emit('priceUpdate', { 
+          symbol, 
+          price: stockData.price,
+          change: stockData.change,
+          changePercent: stockData.changePercent
+        });
       });
       
-      // Send full market update less frequently
-      if (Math.random() > 0.8) { // Only ~20% of the time to reduce traffic
-        io.emit('marketUpdate', marketState.stocks);
-      }
+      console.log(`Market update broadcasted: ${Object.keys(marketState.stocks).length} stocks`);
     }, MARKET_PARAMS.updateInterval);
     
-    // Start order matching timer
+    // Enhanced order processing with better frequency
     setInterval(() => {
-      const transaction = processOrders();
+      processOrders();
       
-      if (transaction) {
-        // Emit transaction to all clients
-        io.emit('transaction', transaction);
-        
-        // Emit specific updates to stock subscribers
-        if (stockSubscriptions.has(transaction.symbol)) {
-          const subscribers = stockSubscriptions.get(transaction.symbol);
-          
-          if (subscribers.size > 0) {
-            io.to(Array.from(subscribers)).emit('orderBookUpdate', {
-              symbol: transaction.symbol,
-              orderBook: marketState.orderBook[transaction.symbol]
-            });
-          }
+      // Broadcast order book updates after processing
+      Object.keys(marketState.orderBook).forEach(symbol => {
+        const orderBook = marketState.orderBook[symbol];
+        if (orderBook && (orderBook.buy.length > 0 || orderBook.sell.length > 0)) {
+          io.emit('orderBookUpdate', {
+            symbol,
+            orderBook
+          });
         }
-      }
-    }, 2000); // Process orders every 2 seconds
+      });
+    }, 1500); // Process orders more frequently
     
-    // Persist data to DB every minute
+    // Market news simulation
     setInterval(() => {
-      persistStockPrices();
-    }, 60000);
+      simulateMarketNews(io);
+    }, 60000); // Every minute
+    
+    // Persist data to DB every 30 seconds for better data consistency
+    setInterval(() => {
+      persistMarketData();
+    }, 30000);
   });
   
-  // Simulate stock price movements
+  // Keep the legacy simulation for compatibility
   simulateStockPrices(io);
 
   // Return the market API
@@ -568,6 +573,71 @@ function setupMarketSimulator(io, stockSubscriptions) {
       return { ...MARKET_PARAMS };
     }
   };
+}
+
+// Simulate market news events that affect prices
+function simulateMarketNews(io) {
+  const newsEvents = [
+    { type: 'earnings', impact: 0.05, sectors: ['AAPL', 'MSFT', 'GOOGL'] },
+    { type: 'fed_announcement', impact: 0.03, sectors: 'all' },
+    { type: 'sector_rotation', impact: 0.02, sectors: ['TSLA', 'NVDA', 'AMD'] },
+    { type: 'geopolitical', impact: 0.04, sectors: 'all' },
+    { type: 'market_sentiment', impact: 0.02, sectors: 'all' }
+  ];
+  
+  // Random chance of news event
+  if (Math.random() < 0.3) { // 30% chance per minute
+    const event = newsEvents[Math.floor(Math.random() * newsEvents.length)];
+    const sentiment = Math.random() > 0.5 ? 1 : -1; // Positive or negative news
+    
+    // Apply news impact
+    const affectedStocks = event.sectors === 'all' 
+      ? Object.keys(marketState.stocks)
+      : event.sectors;
+    
+    affectedStocks.forEach(symbol => {
+      if (marketState.stocks[symbol]) {
+        const currentPrice = marketState.stocks[symbol].price;
+        const impact = sentiment * event.impact * currentPrice;
+        marketState.stocks[symbol].price = Math.max(0.01, currentPrice + impact);
+      }
+    });
+    
+    // Broadcast news event
+    io.emit('marketNews', {
+      type: event.type,
+      sentiment: sentiment > 0 ? 'positive' : 'negative',
+      affectedStocks,
+      timestamp: new Date(),
+      description: generateNewsDescription(event.type, sentiment)
+    });
+    
+    console.log(`Market news event: ${event.type} (${sentiment > 0 ? 'positive' : 'negative'})`);
+  }
+}
+
+// Generate news descriptions
+function generateNewsDescription(type, sentiment) {
+  const positive = sentiment > 0;
+  const descriptions = {
+    earnings: positive 
+      ? "Major companies report better-than-expected quarterly earnings"
+      : "Disappointing earnings reports drag down market sentiment",
+    fed_announcement: positive
+      ? "Federal Reserve signals supportive monetary policy"
+      : "Fed hints at potential interest rate concerns",
+    sector_rotation: positive
+      ? "Technology sector sees renewed investor interest"
+      : "Tech stocks face selling pressure amid rotation",
+    geopolitical: positive
+      ? "Positive developments in international trade relations"
+      : "Geopolitical tensions create market uncertainty",
+    market_sentiment: positive
+      ? "Bullish market sentiment drives broad-based gains"
+      : "Risk-off sentiment weighs on equity markets"
+  };
+  
+  return descriptions[type] || "Market movement detected";
 }
 
 export { setupMarketSimulator };

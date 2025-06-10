@@ -28,7 +28,7 @@ export default function StockSearch() {
 
   const addStock = (stock: { name: string; symbol: string; price: number }) => {
     if (!watchlist.some((s) => s.symbol === stock.symbol)) {
-      setWatchlist([...watchlist, stock]);
+      setWatchlist([...watchlist, { ...stock, quantity: 0 }]);
     }
     setQuery(""); // Clear search bar
   };
